@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Corrective RAG (CRAG) | AI Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Mermaid.js for graph rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <!-- Background glow effects -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-content">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Corrective RAG</h1>
+          <span class="brand-tagline">Self-Correcting Retrieval-Augmented Generation</span>
+        </div>
+      </div>
+
+      <nav class="nav-tabs" id="navTabs">
+        <button class="nav-tab active" data-tab="query-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Assistant
+        </button>
+        <button class="nav-tab" data-tab="indexer-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Vector Indexer
+        </button>
+        <button class="nav-tab" data-tab="graph-tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Graph Workflow
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <div class="status-indicator" id="serverStatusPill">
+          <span class="status-dot"></span>
+          <span class="status-label">Checking...</span>
+        </div>
+        <button class="icon-btn" id="openSettingsBtn" title="API Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="app-main">
+    <div class="layout-grid">
+      <!-- Primary Column -->
+      <section class="main-column">
+
+        <!-- TAB 1: Query Assistant -->
+        <div class="tab-panel active" id="query-tab">
+          <!-- Input Card -->
+          <div class="card query-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h2>Ask Corrective RAG</h2>
+                <p>Retrieves verified knowledge with automated relevance grading and Tavily web search fallback.</p>
+              </div>
+              <div class="model-tags">
+                <span class="badge badge-groq">
+                  <span class="badge-dot"></span> Groq openai/gpt-oss-120b
+                </span>
+                <span class="badge badge-ollama">
+                  <span class="badge-dot"></span> Ollama bge-m3
+                </span>
+              </div>
+            </div>
+
+            <form id="queryForm" class="query-form">
+              <div class="textarea-wrapper">
+                <textarea 
+                  id="questionInput" 
+                  rows="3" 
+                  placeholder="Ask a question (e.g., What are the types of agent memory?)..." 
+                  required
+                ></textarea>
+                <div class="form-actions">
+                  <span class="char-hint">Shift + Enter for new line</span>
+                  <button type="submit" id="submitQueryBtn" class="btn btn-primary">
+                    <span class="btn-text">Generate Answer</span>
+                    <span class="spinner" style="display: none;"></span>
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <!-- Sample Presets -->
+            <div class="preset-queries">
+              <span class="preset-label">Suggested Queries:</span>
+              <div class="preset-chips">
+                <button class="chip" data-query="What are the types of agent memory?">Agent Memory Types</button>
+                <button class="chip" data-query="What are prompt engineering best practices?">Prompt Engineering</button>
+                <button class="chip" data-query="How to protect LLMs against adversarial attacks?">Adversarial Defense</button>
+                <button class="chip" data-query="What were the major breakthroughs in quantum computing in 2026?">Web Fallback Test (2026 Quantum)</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Answer & Pipeline Progress Card -->
+          <div class="card result-card" id="resultCard" style="display: none;">
+            <div class="result-header">
+              <div class="pipeline-badge-group">
+                <span id="decisionBadge" class="decision-badge">
+                  <span class="decision-icon"></span>
+                  <span id="decisionBadgeText">Analyzing...</span>
+                </span>
+                <span class="latency-badge" id="latencyBadge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span id="latencyText">0 ms</span>
+                </span>
+              </div>
+              <button class="icon-btn-sm" id="copyAnswerBtn" title="Copy Answer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+            </div>
+
+            <!-- Visual Pipeline Stepper -->
+            <div class="pipeline-stepper">
+              <div class="step-item completed" id="stepRetrieve">
+                <div class="step-node">1</div>
+                <div class="step-label">
+                  <strong>FAISS Retrieval</strong>
+                  <span>Vector search</span>
+                </div>
+              </div>
+              <div class="step-connector"></div>
+              <div class="step-item" id="stepGrade">
+                <div class="step-node">2</div>
+                <div class="step-label">
+                  <strong>Relevance Grader</strong>
+                  <span>Binary relevance</span>
+                </div>
+              </div>
+              <div class="step-connector"></div>
+              <div class="step-item" id="stepCorrection">
+                <div class="step-node">3</div>
+                <div class="step-label">
+                  <strong>Correction Node</strong>
+                  <span id="correctionStepSub">Dynamic route</span>
+                </div>
+              </div>
+              <div class="step-connector"></div>
+              <div class="step-item" id="stepGenerate">
+                <div class="step-node">4</div>
+                <div class="step-label">
+                  <strong>Groq Synthesis</strong>
+                  <span>openai/gpt-oss-120b</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Answer Box -->
+            <div class="answer-container">
+              <div class="answer-header">
+                <h3>Answer</h3>
+              </div>
+              <div class="answer-content" id="answerContent">
+                <!-- Answer text will be injected here -->
+              </div>
+            </div>
+
+            <!-- Documents Drawer -->
+            <div class="documents-section">
+              <div class="documents-header" id="toggleDocsHeader">
+                <div class="docs-title-group">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <h4>Source Documents & Citations</h4>
+                  <span class="count-pill" id="docsCountPill">0</span>
+                </div>
+                <svg class="chevron-icon" id="docsChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="documents-list" id="documentsList">
+                <!-- Document cards dynamically injected -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: Vector Indexer -->
+        <div class="tab-panel" id="indexer-tab">
+          <div class="card indexer-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h2>Vectorstore Index Management</h2>
+                <p>Ingest web documents, chunk text, and compute dense embeddings with <code>bge-m3:latest</code> into FAISS.</p>
+              </div>
+            </div>
+
+            <div class="indexer-content">
+              <div class="urls-container">
+                <label class="section-label">Target URLs to Ingest & Embed:</label>
+                <div id="urlsList" class="urls-inputs">
+                  <!-- Inputs dynamically managed -->
+                </div>
+                <div class="urls-controls">
+                  <button type="button" id="addUrlBtn" class="btn btn-outline btn-sm">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add URL
+                  </button>
+                  <button type="button" id="resetUrlsBtn" class="btn btn-ghost btn-sm">
+                    Reset to Defaults
+                  </button>
+                </div>
+              </div>
+
+              <div class="index-actions">
+                <button type="button" id="triggerIndexBtn" class="btn btn-primary">
+                  <span class="btn-text">Build / Refresh FAISS Index</span>
+                  <span class="spinner" style="display: none;"></span>
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+                </button>
+              </div>
+
+              <div class="index-status-card" id="indexStatusCard" style="display: none;">
+                <div class="status-summary">
+                  <div class="summary-item">
+                    <span class="summary-label">Status</span>
+                    <span class="summary-val text-success" id="indexStatusMsg">Indexed Successfully</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Total Chunks</span>
+                    <span class="summary-val" id="indexChunksCount">0</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Embedding Model</span>
+                    <span class="summary-val" id="indexEmbedModel">bge-m3:latest</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: Graph Workflow -->
+        <div class="tab-panel" id="graph-tab">
+          <div class="card graph-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h2>Corrective RAG StateGraph Architecture</h2>
+                <p>Live compiled LangGraph workflow displaying decision cycles, grading nodes, and fallback branching.</p>
+              </div>
+              <button class="btn btn-outline btn-sm" id="refreshGraphBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Reload Diagram
+              </button>
+            </div>
+
+            <div class="mermaid-container" id="mermaidDiagramWrapper">
+              <div class="mermaid" id="mermaidContainer">
+                flowchart TD
+                  START([__start__]) --> retrieve[retrieve: FAISS Vectorstore]
+                  retrieve --> grade_documents[grade_documents: Binary Relevance]
+                  grade_documents -->|Documents Inadequate| transform_query[transform_query: Query Rewriter]
+                  grade_documents -->|Documents Relevant| generate[generate: Groq LLaMA 3.3]
+                  transform_query --> web_search_node[web_search_node: Tavily Search]
+                  web_search_node --> generate
+                  generate --> END([__end__])
+              </div>
+            </div>
+
+            <!-- Workflow Description Grid -->
+            <div class="workflow-steps-grid">
+              <div class="step-card">
+                <div class="step-card-num">1</div>
+                <h4>Vector Retrieval</h4>
+                <p>Queries dense embeddings in FAISS using <code>bge-m3</code>.</p>
+              </div>
+              <div class="step-card">
+                <div class="step-card-num">2</div>
+                <h4>Document Grading</h4>
+                <p>Groq evaluates if each passage has semantic relevance (yes/no).</p>
+              </div>
+              <div class="step-card">
+                <div class="step-card-num">3</div>
+                <h4>Query Rewriting</h4>
+                <p>Optimizes question for web search if local context is insufficient.</p>
+              </div>
+              <div class="step-card">
+                <div class="step-card-num">4</div>
+                <h4>Tavily Web Search</h4>
+                <p>Scrapes real-time web results to append to the document context.</p>
+              </div>
+              <div class="step-card">
+                <div class="step-card-num">5</div>
+                <h4>Grounded Synthesis</h4>
+                <p>Groq LLaMA 3.3 70B produces concise, factually grounded answers.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Sidebar Column / System Telemetry -->
+      <aside class="sidebar-column">
+        <!-- Telemetry Card -->
+        <div class="card telemetry-card">
+          <div class="sidebar-header">
+            <h3>System Architecture</h3>
+            <span class="live-tag">LIVE</span>
+          </div>
+
+          <div class="telemetry-list">
+            <div class="telemetry-item">
+              <div class="telemetry-info">
+                <span class="telemetry-name">Groq LLM</span>
+                <span class="telemetry-detail" id="telemGroq">openai/gpt-oss-120b</span>
+              </div>
+              <span class="status-badge status-ok">Connected</span>
+            </div>
+
+            <div class="telemetry-item">
+              <div class="telemetry-info">
+                <span class="telemetry-name">Ollama Embeddings</span>
+                <span class="telemetry-detail" id="telemOllama">bge-m3:latest</span>
+              </div>
+              <span class="status-badge" id="telemOllamaBadge">Checking...</span>
+            </div>
+
+            <div class="telemetry-item">
+              <div class="telemetry-info">
+                <span class="telemetry-name">FAISS Vectorstore</span>
+                <span class="telemetry-detail" id="telemVectorstore">Local Index</span>
+              </div>
+              <span class="status-badge" id="telemVectorBadge">Not Ready</span>
+            </div>
+
+            <div class="telemetry-item">
+              <div class="telemetry-info">
+                <span class="telemetry-name">Tavily Search Fallback</span>
+                <span class="telemetry-detail">Web Search Tool</span>
+              </div>
+              <span class="status-badge status-ok">Active</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Query History Card -->
+        <div class="card history-card">
+          <div class="sidebar-header">
+            <h3>Recent Queries</h3>
+            <button class="btn-clear" id="clearHistoryBtn" title="Clear History">Clear</button>
+          </div>
+          <div class="history-list" id="historyList">
+            <div class="empty-history">No queries submitted yet.</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Backend API Settings</h3>
+        <button class="modal-close" id="closeSettingsBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="apiUrlInput">API Base URL</label>
+          <input type="text" id="apiUrlInput" value="http://localhost:8000" placeholder="http://localhost:8000">
+          <span class="input-hint">The root address of the FastAPI CRAG backend.</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" id="cancelSettingsBtn">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveSettingsBtn">Save & Reconnect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
