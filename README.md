@@ -8,7 +8,7 @@ An advanced Corrective Retrieval-Augmented Generation (CRAG) system that evaluat
 
 ## 🌟 Key Features
 
-- **Text Generation (LLM)**: Powered by Groq using **`llama-3.3-70b-versatile`**.
+- **Text Generation (LLM)**: Powered by Groq using **`openai/gpt-oss-120b`**.
 - **Embeddings**: Powered by Ollama using **`bge-m3:latest`**.
 - **Self-Correction & Evaluation**: Binary relevance grading of retrieved documents.
 - **Dynamic Web Search**: If documents lack sufficient relevance, the query is rewritten and searched on Tavily before generation.
@@ -37,7 +37,7 @@ Corrective-Rag/
 │   │   ├── embeddings.py    # OllamaEmbeddings factory (bge-m3:latest)
 │   │   ├── generator.py     # RAG prompt and answer generator
 │   │   ├── grader.py        # Document relevance grader (structured output)
-│   │   ├── llm.py           # ChatGroq LLM factory (llama-3.3-70b-versatile)
+│   │   ├── llm.py           # ChatGroq LLM factory (openai/gpt-oss-120b)
 │   │   ├── rewriter.py      # Question rewriter for web search query optimization
 │   │   ├── search.py        # Tavily search integration with safe fallback
 │   │   └── vectorstore.py   # Document loading, text splitting, FAISS index management
@@ -77,7 +77,7 @@ Configure your environment variables in `.env`:
 ```env
 # Groq API Configuration
 GROQ_API_KEY=gsk_your_groq_api_key_here
-GROQ_MODEL=llama-3.3-70b-versatile
+GROQ_MODEL=openai/gpt-oss-120b
 GROQ_TEMPERATURE=0.0
 
 # Ollama Embeddings Configuration
@@ -155,7 +155,7 @@ docker run -p 8000:8000 --env-file .env corrective-rag
 ```json
 {
   "status": "healthy",
-  "groq_model": "llama-3.3-70b-versatile",
+  "groq_model": "openai/gpt-oss-120b",
   "ollama_model": "bge-m3:latest",
   "vectorstore_ready": true
 }
